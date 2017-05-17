@@ -5,7 +5,6 @@
 }
 
 <h2>Create</h2>
-
 <script src="~/scripts/tinymce/tinymce.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script>
@@ -26,6 +25,50 @@
             success: function (Text) {
                 document.getElementById("Text").value = Text;
                 tinyMCE.activeEditor.execCommand('mceInsertContent', false, Text);
+            },
+            complete: function () {
+
+            }
+        });
+    }
+
+    function ISBN() {
+
+        var formData = new FormData();
+        var Reference1 = document.getElementById('Reference1').value;
+        var pages = document.getElementById('pages').value;
+        //var style = document.getElementById('style').value;
+
+        var radios = document.getElementsByName('style');
+        var radiovalue;
+        for (var i = 0, length = radios.length; i < length; i++) {
+            if (radios[i].checked) {
+                // do whatever you want with the checked radio
+                //alert(radios[i].value);
+                radiovalue = radios[i].value;
+                // only one radio can be logically checked, don't check the rest
+                //break;
+            }
+        }
+
+        //var style;
+        //if (document.getElementById('cite').checked) {
+        //    style = document.getElementById('cite').value;
+        //}
+
+        formData.append("Reference1", Reference1);
+        formData.append("pages", pages);
+        formData.append("style", radiovalue);
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ISBN", "Contents")',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (Reference) {
+                document.getElementById("Reference").value = Reference;
             },
             complete: function () {
 
@@ -76,29 +119,35 @@
 
 
 </script>
-
 <form enctype="multipart/form-data">
     Picture <input type="file" id="ePic" name="ePic" /><br />
     <input type="button" value="OCR" onclick="OCR()" />
 </form>
+<form>
+    ISBN <input type="text" id="Reference1" name="Reference1" /><br />
+    Pages <input type="text" id="pages" name="pages" /><br />
+    @*Style <input type="text" id="style" name="style" /><br />*@
+
+    <fieldset id="style">
+        <input type="radio" value="APA" name="style"> APA<br />
+        <input type="radio" value="MLA" name="style"> MLA
+    </fieldset>
+
+    <input type="button" value="ISBN" onclick="ISBN()" />
+</form>
 
 
 
-
-
-
-@using (Html.BeginForm()) 
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         <h4>Content</h4>
         <hr />
-
         <!-- This will automatically post to your Index method
         (that is decorated with a HttpPost attribute) -->
         @Html.TextAreaFor(model => model.Note)
-
 
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
@@ -108,15 +157,14 @@
                 @Html.ValidationMessageFor(model => model.Text, "", new { @class = "text-danger" })
             </div>
         </div>
-
         <div class="form-group">
-            @Html.LabelFor(model => model.Reference, htmlAttributes: new { @class = "control-label col-md-2" })
+            <p>ISBN</p>
+            @*@Html.LabelFor(model => model.Reference, htmlAttributes: new { @class = "control-label col-md-2" })*@
             <div class="col-md-10">
                 <input name="Reference" class="form-control text-box single-line" id="Reference" type="text" value="">
                 @Html.ValidationMessageFor(model => model.Reference, "", new { @class = "text-danger" })
             </div>
         </div>
-
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Create" class="btn btn-default" />
